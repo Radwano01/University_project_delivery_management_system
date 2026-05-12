@@ -21,6 +21,17 @@ using namespace std;
     - delete = "remove object"
 ====================================================*/
 
+/*
+    DeliveryException CLASS
+
+    PURPOSE:
+    - This class is used to create CUSTOM ERROR messages
+    - It extends the built-in C++ "exception" class
+
+    WHY WE USE IT:
+    - Instead of generic errors, we can show meaningful messages
+    - Example: "Order not found", "Invalid input", etc.
+*/
 /*================ EXCEPTION ================*/
 class DeliveryException : public exception
 {
