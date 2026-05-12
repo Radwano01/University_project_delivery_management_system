@@ -47,18 +47,17 @@ public:
         id = i;
     }
 
-    string getUsername()
-    {
-        return username;
-    }
+    /* GETTERS */
+    string getUsername() { return username; }
+    string getPassword() { return password; }
+    int getId() { return id; }
 
-    string getPassword()
-    {
-        return password;
-    }
+    /* SETTERS */
+    void setUsername(string u) { username = u; }
+    void setPassword(string p) { password = p; }
+    void setId(int i) { id = i; }
 
     virtual void display() = 0;
-
     virtual ~User() {}
 };
 
@@ -70,10 +69,8 @@ public:
 class Customer : public User
 {
 public:
-
     Customer(string u, string p, int i)
-        : User(u, p, i)
-    {
+        : User(u, p, i) {
     }
 
     void display() override
@@ -81,27 +78,6 @@ public:
         cout << "Customer: " << username << endl;
     }
 };
-
-
-
-/*====================================================
-                     DRIVER
-====================================================*/
-class Driver : public User
-{
-public:
-
-    Driver(string u, string p, int i)
-        : User(u, p, i)
-    {
-    }
-
-    void display() override
-    {
-        cout << "Driver: " << username << endl;
-    }
-};
-
 
 
 
@@ -121,17 +97,13 @@ enum OrderStatus
 class Delivery
 {
 protected:
-
     int orderId;
     string customerName;
     string driverName;
-
     string pickupAddress;
     string dropAddress;
-
     double distance;
     int etaMinutes;
-
     OrderStatus status;
 
 public:
@@ -147,61 +119,51 @@ public:
         orderId = id;
         customerName = customer;
         driverName = driver;
-
         pickupAddress = pickup;
         dropAddress = drop;
-
         distance = dist;
         etaMinutes = eta;
-
         status = PENDING;
     }
 
-
     virtual double calculateFee() = 0;
 
+    /*====================================================
+                        SETTERS
+    ====================================================*/
+    void setOrderId(int id) { orderId = id; }
+    void setCustomerName(string c) { customerName = c; }
+    void setDriverName(string d) { driverName = d; }
+    void setPickupAddress(string p) { pickupAddress = p; }
+    void setDropAddress(string d) { dropAddress = d; }
+    void setDistance(double d) { distance = d; }
+    void setEtaMinutes(int e) { etaMinutes = e; }
+    void setStatus(OrderStatus s) { status = s; }
 
-    void setStatus(OrderStatus s)
-    {
-        status = s;
-    }
-
+    /*====================================================
+                        GETTERS
+    ====================================================*/
+    int getOrderId() { return orderId; }
+    string getCustomer() { return customerName; }
+    string getDriverName() { return driverName; }
+    string getPickupAddress() { return pickupAddress; }
+    string getDropAddress() { return dropAddress; }
+    double getDistance() { return distance; }
+    int getEtaMinutes() { return etaMinutes; }
+    OrderStatus getStatus() { return status; }
 
     string getStatusText()
     {
         switch (status)
         {
-        case PENDING:
-            return "Pending";
-
-        case PICKED_UP:
-            return "Picked Up";
-
-        case IN_TRANSIT:
-            return "In Transit";
-
-        case DELIVERED:
-            return "Delivered";
+        case PENDING: return "Pending";
+        case PICKED_UP: return "Picked Up";
+        case IN_TRANSIT: return "In Transit";
+        case DELIVERED: return "Delivered";
         }
-
         return "Unknown";
     }
 
-
-    int getOrderId()
-    {
-        return orderId;
-    }
-
-
-    string getCustomer()
-    {
-        return customerName;
-    }
-
-
-
-    /* summary row */
     virtual void showOrderSummary()
     {
         cout << left
@@ -209,75 +171,30 @@ public:
             << setw(15) << customerName
             << setw(18) << getStatusText()
             << setw(10)
-            << fixed
-            << setprecision(2)
+            << fixed << setprecision(2)
             << calculateFee()
             << endl;
     }
 
-
-
-    /* detailed order tracking */
     virtual void showTrackingDetails()
     {
         cout << "\n=====================================\n";
         cout << "          ORDER TRACKING\n";
         cout << "=====================================\n";
 
-        cout << "Order ID        : "
-            << orderId << endl;
-
-        cout << "Customer        : "
-            << customerName << endl;
-
-        cout << "Driver          : "
-            << driverName << endl;
-
-        cout << "Pickup Address  : "
-            << pickupAddress << endl;
-
-        cout << "Drop Address    : "
-            << dropAddress << endl;
-
-        cout << "Distance        : "
-            << distance << " km" << endl;
-
-        cout << "Delivery Fee    : "
-            << fixed
-            << setprecision(2)
-            << calculateFee()
-            << endl;
-
-        cout << "ETA             : "
-            << etaMinutes
-            << " minutes" << endl;
-
-        cout << "Status          : "
-            << getStatusText()
-            << endl;
-
-
-
-        cout << "\nTracking Timeline\n";
-        cout << "--------------------------\n";
-
-        cout << "Order Created\n";
-        cout << "Driver Assigned\n";
-
-        if (status >= PICKED_UP)
-            cout << "Package Picked Up\n";
-
-        if (status >= IN_TRANSIT)
-            cout << "Package In Transit\n";
-
-        if (status == DELIVERED)
-            cout << "Delivered Successfully\n";
+        cout << "Order ID        : " << orderId << endl;
+        cout << "Customer        : " << customerName << endl;
+        cout << "Driver          : " << driverName << endl;
+        cout << "Pickup Address  : " << pickupAddress << endl;
+        cout << "Drop Address    : " << dropAddress << endl;
+        cout << "Distance        : " << distance << " km" << endl;
+        cout << "Fee             : " << calculateFee() << endl;
+        cout << "ETA             : " << etaMinutes << " minutes" << endl;
+        cout << "Status          : " << getStatusText() << endl;
     }
-
 
     virtual ~Delivery() {}
 };
-
 
 
 
@@ -287,7 +204,6 @@ public:
 class StandardDelivery : public Delivery
 {
 public:
-
     StandardDelivery(int id,
         string customer,
         string driver,
@@ -295,26 +211,14 @@ public:
         string drop,
         double dist,
         int eta)
-
-        : Delivery(id,
-            customer,
-            driver,
-            pickup,
-            drop,
-            dist,
-            eta)
-    {
+        : Delivery(id, customer, driver, pickup, drop, dist, eta) {
     }
-
 
     double calculateFee() override
     {
         return distance * 2.50;
     }
-
 };
-
-
 
 
 
@@ -324,19 +228,14 @@ public:
 class OrderTracker
 {
 public:
-
-    void updateStatus(Delivery* order,
-        OrderStatus newStatus)
+    void updateStatus(Delivery* order, OrderStatus newStatus)
     {
-        if (order == nullptr)
+        if (!order)
             throw DeliveryException("Order missing");
 
         order->setStatus(newStatus);
     }
-
 };
-
-
 
 
 
@@ -348,26 +247,21 @@ class OrderSystem
 private:
     vector<Delivery*> orders;
 
-
 public:
 
     void addOrder(Delivery* order)
     {
-        if (order == nullptr)
+        if (!order)
             throw DeliveryException("Invalid order");
 
         orders.push_back(order);
     }
 
-
-
-    /*---------------- save users ----------------*/
     void saveUser(Customer user)
     {
         ofstream file("users.txt", ios::app);
 
-        file
-            << user.getUsername()
+        file << user.getUsername()
             << " "
             << user.getPassword()
             << endl;
@@ -375,17 +269,13 @@ public:
         file.close();
     }
 
-
-
-    /*---------------- save orders ----------------*/
     void saveOrders()
     {
         ofstream file("orders.txt");
 
         for (auto order : orders)
         {
-            file
-                << order->getOrderId()
+            file << order->getOrderId()
                 << " "
                 << order->getCustomer()
                 << endl;
@@ -394,31 +284,24 @@ public:
         file.close();
     }
 
-
-
-
-    /*----------- option 1 view my orders --------*/
     void viewMyOrders()
     {
         string user, pass;
 
-        cout << "\nUsername: ";
+        cout << "\nEnter username: ";
         cin >> user;
 
-        cout << "Password: ";
+        cout << "Enter password: ";
         cin >> pass;
-
 
         ifstream file("users.txt");
 
         string u, p;
-
         bool valid = false;
 
         while (file >> u >> p)
         {
-            if (user == u &&
-                pass == p)
+            if (user == u && pass == p)
             {
                 valid = true;
                 break;
@@ -430,40 +313,16 @@ public:
         if (!valid)
             throw DeliveryException("Login failed");
 
-
-
-        cout << "\n====================================\n";
-        cout << "           MY ORDERS\n";
-        cout << "====================================\n";
-
-        cout << left
-            << setw(10) << "ID"
-            << setw(15) << "Customer"
-            << setw(18) << "Status"
-            << setw(10) << "Fee"
-            << endl;
-
+        cout << "\nMY ORDERS\n";
         cout << "------------------------------------\n";
-
-        bool found = false;
 
         for (auto order : orders)
         {
             if (order->getCustomer() == user)
-            {
                 order->showOrderSummary();
-                found = true;
-            }
         }
-
-        if (!found)
-            cout << "No orders found.\n";
     }
 
-
-
-
-    /*------ option 2 track specific order ------*/
     void trackSpecificOrder(int id)
     {
         for (auto order : orders)
@@ -478,18 +337,12 @@ public:
         throw DeliveryException("Order ID not found");
     }
 
-
-
-
     ~OrderSystem()
     {
         for (auto order : orders)
             delete order;
     }
-
 };
-
-
 
 
 
@@ -503,125 +356,55 @@ int main()
         OrderSystem system;
         OrderTracker tracker;
 
+        ofstream file("users.txt");
+        file << "ali 1234\n";
+        file << "sara abcd\n";
+        file.close();
 
-        /* customers */
         Customer c1("ali", "1234", 1);
         Customer c2("sara", "abcd", 2);
 
         system.saveUser(c1);
         system.saveUser(c2);
 
-
-
-        /* orders */
-        Delivery* o1 =
-            new StandardDelivery(
-                101,
-                "ali",
-                "Omar",
-                "Adana Center",
-                "Cukurova",
-                20,
-                25
-            );
-
-
-        Delivery* o2 =
-            new StandardDelivery(
-                102,
-                "ali",
-                "Omar",
-                "Seyhan",
-                "Yuregir",
-                14,
-                18
-            );
-
-
-        Delivery* o3 =
-            new StandardDelivery(
-                103,
-                "sara",
-                "Ahmad",
-                "Tarsus",
-                "Mersin",
-                35,
-                40
-            );
-
-
+        Delivery* o1 = new StandardDelivery(101, "ali", "Omar", "Adana", "Cukurova", 20, 25);
+        Delivery* o2 = new StandardDelivery(102, "ali", "Omar", "Seyhan", "Yuregir", 14, 18);
+        Delivery* o3 = new StandardDelivery(103, "sara", "Ahmad", "Tarsus", "Mersin", 35, 40);
 
         system.addOrder(o1);
         system.addOrder(o2);
         system.addOrder(o3);
 
-
-
         tracker.updateStatus(o1, DELIVERED);
         tracker.updateStatus(o2, IN_TRANSIT);
         tracker.updateStatus(o3, PICKED_UP);
 
-
         system.saveOrders();
-
-
 
         int option;
 
         do
         {
-            cout << "\n====================================\n";
-            cout << " DELIVERY MANAGEMENT SYSTEM\n";
-            cout << "====================================\n";
-
-            cout << "1. View My Orders\n";
-            cout << "2. Track Specific Order\n";
-            cout << "3. Exit\n";
-
-            cout << "\nSelect Option: ";
+            cout << "\n1. View My Orders\n2. Track Order\n3. Exit\n";
+            cout << "Enter option: ";
             cin >> option;
 
-
-            switch (option)
-            {
-
-            case 1:
+            if (option == 1)
                 system.viewMyOrders();
-                break;
-
-
-            case 2:
+            else if (option == 2)
             {
                 int id;
-
-                cout << "\nEnter Order ID: ";
+                cout << "Enter Order ID: ";
                 cin >> id;
-
                 system.trackSpecificOrder(id);
-
-                break;
-            }
-
-
-            case 3:
-                cout << "\nExiting system...\n";
-                break;
-
-
-            default:
-                cout << "Invalid option.\n";
-
             }
 
         } while (option != 3);
 
-
     }
     catch (exception& e)
     {
-        cout << "\nError: "
-            << e.what()
-            << endl;
+        cout << "Error: " << e.what() << endl;
     }
 
     return 0;
