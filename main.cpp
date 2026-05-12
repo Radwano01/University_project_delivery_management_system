@@ -21,17 +21,6 @@ using namespace std;
     - delete = "remove object"
 ====================================================*/
 
-/*
-    DeliveryException CLASS
-
-    PURPOSE:
-    - This class is used to create CUSTOM ERROR messages
-    - It extends the built-in C++ "exception" class
-
-    WHY WE USE IT:
-    - Instead of generic errors, we can show meaningful messages
-    - Example: "Order not found", "Invalid input", etc.
-*/
 /*================ EXCEPTION ================*/
 class DeliveryException : public exception
 {
@@ -192,6 +181,17 @@ public:
         orders.push_back(o);
     }
 
+    /* check if the order id is duplicate */
+    bool isDuplicateId(int id)
+    {
+        for (auto o : orders)
+        {
+            if (o->getOrderId() == id)
+                return true;
+        }
+        return false;
+    }
+
     /* CREATE ORDER */
     /*================ CREATE =================*/
     void createOrder()
@@ -205,6 +205,13 @@ public:
 
         cout << "Order ID: ";
         cin >> id;
+
+        /* CHECK FOR DUPLICATE ID */
+        if (isDuplicateId(id))
+        {
+            cout << "Error: Order ID already exists! Try another ID.\n";
+            return; // stop creation
+        }
 
         cout << "Customer: ";
         cin >> customer;
