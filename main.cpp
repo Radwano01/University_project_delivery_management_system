@@ -540,7 +540,7 @@ public:
     }
 
     /* updateOrder: allows user to change specific fields of an existing order
-       Reads file, finds matching order, updates it, then rewrites file */
+       Reads all orders into memory, updates the one, then writes all back */
     void updateOrder()
     {
         /* Declare variable for order ID to search for */
@@ -555,15 +555,14 @@ public:
         /* If file can't open, order doesn't exist */
         if (!fin) { cout << "Order not found!\n"; return; }
         
-        /* Open temporary file for writing updated orders */
-        ofstream fout("orders_tmp.txt");
-        
+        /* Create vector to store all orders in memory */
+        vector<string> allOrders;
         /* Variable to hold each line from file */
-        string line; 
+        string line;
         /* Boolean flag to track if we found the order */
         bool found = false;
         
-        /* Loop through every line in the file */
+        /* Read ALL orders from file into vector in memory */
         while (getline(fin, line))
         {
             /* Declare variables for parsed order data */
@@ -591,7 +590,7 @@ public:
                 /* Check which field user wants to update */
                 if (choice == 0) { 
                     /* User chose Cancel - keep original line unchanged */
-                    fout << line << "\n"; 
+                    allOrders.push_back(line);
                 }
                 else if (choice == 1) { 
                     /* User chose to update Driver */
@@ -602,8 +601,8 @@ public:
                     driver = nd; 
                     /* Create temporary object with updated driver */
                     StandardDelivery tmp(fid, customer, driver, pickup, drop, dist, eta); 
-                    /* Write updated order to temporary file */
-                    fout << serializeOrder(&tmp) << "\n"; 
+                    /* Add updated order to vector */
+                    allOrders.push_back(serializeOrder(&tmp));
                 }
                 else if (choice == 2) { 
                     /* User chose to update Pickup */
@@ -614,8 +613,8 @@ public:
                     pickup = np; 
                     /* Create temporary object with updated pickup */
                     StandardDelivery tmp(fid, customer, driver, pickup, drop, dist, eta); 
-                    /* Write updated order to temporary file */
-                    fout << serializeOrder(&tmp) << "\n"; 
+                    /* Add updated order to vector */
+                    allOrders.push_back(serializeOrder(&tmp));
                 }
                 else if (choice == 3) { 
                     /* User chose to update Drop address */
@@ -626,8 +625,8 @@ public:
                     drop = ndrop; 
                     /* Create temporary object with updated drop */
                     StandardDelivery tmp(fid, customer, driver, pickup, drop, dist, eta); 
-                    /* Write updated order to temporary file */
-                    fout << serializeOrder(&tmp) << "\n"; 
+                    /* Add updated order to vector */
+                    allOrders.push_back(serializeOrder(&tmp));
                 }
                 else if (choice == 4) { 
                     /* User chose to update Distance */
@@ -638,8 +637,8 @@ public:
                     dist = ndist; 
                     /* Create temporary object with updated distance */
                     StandardDelivery tmp(fid, customer, driver, pickup, drop, dist, eta); 
-                    /* Write updated order to temporary file */
-                    fout << serializeOrder(&tmp) << "\n"; 
+                    /* Add updated order to vector */
+                    allOrders.push_back(serializeOrder(&tmp));
                 }
                 else if (choice == 5) { 
                     /* User chose to update ETA */
@@ -650,41 +649,42 @@ public:
                     eta = neta; 
                     /* Create temporary object with updated eta */
                     StandardDelivery tmp(fid, customer, driver, pickup, drop, dist, eta); 
-                    /* Write updated order to temporary file */
-                    fout << serializeOrder(&tmp) << "\n"; 
+                    /* Add updated order to vector */
+                    allOrders.push_back(serializeOrder(&tmp));
                 }
                 else { 
                     /* Invalid option - keep original line unchanged */
                     cout << "Invalid option!\n"; 
-                    fout << line << "\n"; 
+                    allOrders.push_back(line);
                 }
             }
             else { 
-                /* This is not the order we're looking for - copy it unchanged */
-                fout << line << "\n"; 
+                /* This is not the order we're looking for - add it to vector */
+                allOrders.push_back(line);
             }
         }
         /* Close input file */
-        fin.close(); 
-        /* Close output temporary file */
-        fout.close();
+        fin.close();
         
         /* Check if we found the order ID */
         if (!found) { 
-            /* Order not found - delete temporary file and show error */
-            remove("orders_tmp.txt"); 
             cout << "Order not found!\n"; 
             return; 
         }
-        /* Replace old file with updated temporary file */
-        remove(filename.c_str()); 
-        rename("orders_tmp.txt", filename.c_str()); 
+        
+        /* Write ALL orders from vector back to file */
+        ofstream fout(filename);
+        for (const string& order : allOrders) {
+            fout << order << "\n";
+        }
+        fout.close();
+        
         /* Show success message */
         cout << "Updated successfully!\n";
     }
 
     /* deleteOrder: removes an order from file completely
-       Reads file, skips matching order, rewrites file without it */
+       Reads all orders into memory, removes matching one, writes all back */
     void deleteOrder()
     {
         /* Declare variable for order ID to search for */
@@ -699,15 +699,14 @@ public:
         /* If file can't open, order doesn't exist */
         if (!fin) { cout << "Not found!\n"; return; }
         
-        /* Open temporary file for writing (without the deleted order) */
-        ofstream fout("orders_tmp.txt"); 
-        
+        /* Create vector to store all orders in memory */
+        vector<string> allOrders;
         /* Variable to hold each line from file */
         string line; 
         /* Boolean flag to track if we found the order to delete */
         bool found = false;
         
-        /* Loop through every line in file */
+        /* Read ALL orders from file into vector in memory */
         while (getline(fin, line))
         {
             /* Declare variables for parsed order data */
@@ -720,27 +719,28 @@ public:
             if (fid == id) { 
                 /* Mark that we found the order */
                 found = true; 
-                /* Skip this line (don't write to temporary file) */
+                /* Skip adding this order to vector (effectively deleting it) */
                 continue; 
             }
-            /* This is not the order to delete - copy it to temporary file */
-            fout << line << "\n";
+            /* This is not the order to delete - add it to vector */
+            allOrders.push_back(line);
         }
         /* Close input file */
-        fin.close(); 
-        /* Close output temporary file */
-        fout.close();
+        fin.close();
         
         /* Check if we found the order to delete */
         if (!found) { 
-            /* Order not found - delete temporary file and show error */
-            remove("orders_tmp.txt"); 
             cout << "Not found!\n"; 
             return; 
         }
-        /* Replace old file with updated temporary file (without deleted order) */
-        remove(filename.c_str()); 
-        rename("orders_tmp.txt", filename.c_str()); 
+        
+        /* Write ALL orders from vector back to file */
+        ofstream fout(filename);
+        for (const string& order : allOrders) {
+            fout << order << "\n";
+        }
+        fout.close();
+        
         /* Show success message */
         cout << "Deleted!\n";
     }
