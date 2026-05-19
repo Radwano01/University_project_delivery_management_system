@@ -227,7 +227,6 @@ public:
         getline(cin, pickup);
         cout << "Drop Address: ";
         getline(cin, drop);
-        cout << "Distance: ";
         while (true)
         {
             cout << "Distance: ";
