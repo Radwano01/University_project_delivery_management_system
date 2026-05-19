@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <stdexcept>
 #include <string>
+#include <filesystem>
+#include <limits>
 
 using namespace std;
 
@@ -100,7 +102,8 @@ public:
     StandardDelivery(int id, string customer, string driver,
         string pickup, string drop,
         double dist, int eta)
-        : Delivery(id, customer, driver, pickup, drop, dist, eta) {}
+        : Delivery(id, customer, driver, pickup, drop, dist, eta) {
+    }
 
     double calculateFee() override
     {
@@ -113,18 +116,18 @@ public:
 class OrderSystem
 {
 private:
-    const string filename = "orders.txt";
+    const string filename = (filesystem::current_path() / "orders.txt").string();
 
     static string serializeOrder(Delivery* o)
     {
         ostringstream ss;
         ss << o->getOrderId() << "|"
-           << o->getCustomer() << "|"
-           << o->getDriver() << "|"
-           << o->getPickup() << "|"
-           << o->getDrop() << "|"
-           << fixed << setprecision(2) << o->getDistance() << "|"
-           << o->getEta();
+            << o->getCustomer() << "|"
+            << o->getDriver() << "|"
+            << o->getPickup() << "|"
+            << o->getDrop() << "|"
+            << fixed << setprecision(2) << o->getDistance() << "|"
+            << o->getEta();
         return ss.str();
     }
 
@@ -149,7 +152,28 @@ private:
         return true;
     }
 
+    int getNextId()
+    {
+        ifstream fin(filename);
+        int maxId = 0;
+
+        string line;
+        while (getline(fin, line))
+        {
+            int id; string a, b, c, d, e; double dist; int eta;
+            if (parseLine(line, id, a, b, c, d, dist, eta))
+            {
+                if (id > maxId)
+                    maxId = id;
+
+            }
+        }
+        return maxId + 1;
+    }
+
 public:
+    string currentUser;
+    bool isAdmin = false;
     OrderSystem() { ofstream f(filename, ios::app); }
 
     void addOrder(Delivery* o)
@@ -168,7 +192,7 @@ public:
         string line;
         while (getline(fin, line))
         {
-            int fid; string a,b,c; string d,e; double dist; int eta;
+            int fid; string a, b, c; string d, e; double dist; int eta;
             if (parseLine(line, fid, a, b, d, e, dist, eta))
             {
                 if (fid == id) return true;
@@ -179,16 +203,20 @@ public:
 
     void createOrder()
     {
-        int id, eta;
+        int id = getNextId(), eta;
         string customer, driver;
         string pickup, drop;
         double distance;
 
         cout << "\n--- CREATE ORDER ---\n";
-        cout << "Order ID: ";
-        cin >> id;
+        cout << "Generated Order ID: " << id << "\n";
 
-        if (isDuplicateId(id)) { cout << "Error: Order ID already exists! Try another ID.\n"; return; }
+        if (isDuplicateId(id)) {
+            cout << "Error: Order ID already exists!\n";
+            cin.ignore();
+            cin.get();
+            return;
+        }
 
         cout << "Customer: ";
         cin >> customer;
@@ -200,9 +228,27 @@ public:
         cout << "Drop Address: ";
         getline(cin, drop);
         cout << "Distance: ";
-        cin >> distance;
+        while (true)
+        {
+            cout << "Distance: ";
+            if (cin >> distance)
+                break;
+
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
         cout << "ETA: ";
-        cin >> eta;
+        while (true)
+        {
+            cout << "ETA: ";
+            if (cin >> eta)
+                break;
+
+            cout << "Invalid input! Please enter a number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
 
         addOrder(new StandardDelivery(id, customer, driver, pickup, drop, distance, eta));
         cout << "Order created!\n";
@@ -227,8 +273,11 @@ public:
             int id; string customer, driver, pickup, drop; double dist; int eta;
             if (parseLine(line, id, customer, driver, pickup, drop, dist, eta))
             {
-                StandardDelivery tmp(id, customer, driver, pickup, drop, dist, eta);
-                tmp.printRow();
+                if (customer == currentUser || isAdmin)
+                {
+                    StandardDelivery tmp(id, customer, driver, pickup, drop, dist, eta);
+                    tmp.printRow();
+                }
             }
         }
     }
@@ -295,7 +344,7 @@ public:
         string line; bool found = false;
         while (getline(fin, line))
         {
-            int fid; string a,b,c; string d,e; double dist; int eta;
+            int fid; string a, b, c; string d, e; double dist; int eta;
             if (!parseLine(line, fid, a, b, d, e, dist, eta)) continue;
             if (fid == id) { found = true; continue; }
             allOrders.push_back(line);
@@ -308,27 +357,34 @@ public:
         cout << "Deleted!\n";
     }
 
-    ~OrderSystem() {}
+    ~OrderSystem()
+    {
+        remove(filename.c_str());
+    }
 };
 
 string login(bool& isAdmin)
 {
     string user, pass;
+
     cout << "\n=========== LOGIN ===========\n";
     cout << "Username: ";
     cin >> user;
     cout << "Password: ";
     cin >> pass;
+
     if (user == "admin" && pass == "admin123")
     {
         isAdmin = true;
         return user;
     }
-    else
+
+    if (user == "user" && pass == "1234")
     {
         isAdmin = false;
         return user;
     }
+
     throw runtime_error("Invalid login!");
 }
 
@@ -336,9 +392,6 @@ int main()
 {
     OrderSystem system;
 
-    system.addOrder(new StandardDelivery(101, "ali", "Omar", "Adana", "Cukurova", 20, 25));
-    system.addOrder(new StandardDelivery(102, "ali", "Omar", "Seyhan", "Yuregir", 14, 18));
-    system.addOrder(new StandardDelivery(103, "sara", "Ahmad", "Tarsus", "Mersin", 35, 40));
 
     while (true)
     {
@@ -346,6 +399,8 @@ int main()
         {
             bool isAdmin;
             string user = login(isAdmin);
+            system.currentUser = user;
+            system.isAdmin = isAdmin;
             int choice;
             while (true)
             {
